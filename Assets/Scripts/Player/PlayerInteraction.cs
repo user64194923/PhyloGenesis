@@ -23,6 +23,13 @@ public class PlayerInteraction : MonoBehaviour {
     [SerializeField]
     private float ObjectHoldForce;
 
+    [Tooltip("Sway ampunt for equipped object")]
+    [SerializeField]
+    private float SwayMultiplier;
+    [Tooltip("Sway smooth factor for equipped object")]
+    [SerializeField]
+    private float SwaySmooth;
+
     [Header("References")]
     [SerializeField]
     private GameObject Player;
@@ -64,6 +71,13 @@ public class PlayerInteraction : MonoBehaviour {
 
         }
 
+        if (equippedObject != null) {
+
+            EquippedObjectSway();
+
+            if (Input.GetKeyDown(EquipKey)) UnEquipObject();
+        }
+
         Ray ray = new Ray(playerCamera.position, playerCamera.forward);
         RaycastHit hit;
 
@@ -72,15 +86,17 @@ public class PlayerInteraction : MonoBehaviour {
             IInteractable interactable = hit.collider.GetComponent<IInteractable>();
             // if (heldObject == null) PlayerUI.ActivateCrosshairRing(true);
 
-            if(Input.GetKeyDown(KeyCode.E)) {
+            if (Input.GetKeyDown(InteractKey)) {
                 if (interactable != null) {
-
                     interactable.Interact();
-
                 } else {
-
                     if (!Input.GetKey(KeyCode.Mouse1)) PickUpObject(hit);
                 }
+            }
+
+            if (Input.GetKeyDown(EquipKey)) {
+                if (!IsEquippedObject) EquipObject(hit);
+                
             }
 
             
@@ -93,6 +109,68 @@ public class PlayerInteraction : MonoBehaviour {
     #endregion
 
     #region Methods
+
+    private void EquipObject(RaycastHit hit) {
+        equippedObjectRb = hit.transform.gameObject.GetComponent<Rigidbody>();
+
+        if (equippedObjectRb != null && !equippedObjectRb.isKinematic) {
+
+            IsEquippedObject = true;
+
+            equippedObject = hit.transform.gameObject;
+            equippedObject.transform.position = ObjectEquipPoint.position;
+            equippedObject.transform.rotation = ObjectEquipPoint.rotation;
+            equippedObjectRb.useGravity = false;
+            equippedObjectRb.constraints = RigidbodyConstraints.FreezeRotation;
+            equippedObjectRb.transform.parent = ObjectEquipPoint;
+            equippedObjectRb.isKinematic = true;
+
+            Physics.IgnoreCollision(equippedObject.GetComponent<Collider>(), Player.GetComponent<Collider>(), true);
+
+        } else {
+            Debug.Log("Cant equip this object");
+        }
+    }
+
+    private void UnEquipObject() {
+
+        Debug.Log("UnEquip");
+
+        if (equippedObject == null) return;
+
+        equippedObject.transform.position = ObjectEquipPoint.position;
+        equippedObject.transform.rotation = ObjectEquipPoint.rotation;
+        equippedObjectRb.useGravity = true;
+        equippedObjectRb.constraints = RigidbodyConstraints.None;
+        equippedObjectRb.transform.parent = null;
+        equippedObjectRb.isKinematic = false;
+
+        equippedObjectRb.AddForce(ObjectEquipPoint.forward * (ObjectThrowForce * 0.1f), ForceMode.Impulse);
+
+        StartCoroutine(ClearEquippedObject());
+
+    }
+
+    private void EquippedObjectSway() {
+
+        if (!IsEquippedObject) return;
+        if (equippedObject == null) return;
+
+        // get mouse input
+        float mouseX = Input.GetAxisRaw("Mouse X") * SwayMultiplier;
+        float mouseY = Input.GetAxisRaw("Mouse Y") * SwayMultiplier;
+
+        // calculate target rotation
+        Quaternion rotationX = Quaternion.AngleAxis(-mouseY, Vector3.right);
+        Quaternion rotationY = Quaternion.AngleAxis(mouseX, Vector3.up);
+
+        Quaternion targetRotation = rotationX * rotationY;
+
+        // rotate 
+        equippedObject.transform.localRotation = Quaternion.Slerp(equippedObject.transform.localRotation, targetRotation, SwaySmooth * Time.deltaTime);
+
+
+    }
 
     private void PickUpObject(RaycastHit hit) {
 
@@ -164,7 +242,13 @@ public class PlayerInteraction : MonoBehaviour {
         }
     }
 
-    
+    private IEnumerator ClearEquippedObject() {
+
+        yield return new WaitForSeconds(0.1f);
+        equippedObject = null;
+        equippedObjectRb = null;
+        IsEquippedObject = false;
+    }
 
     private IEnumerator ClearHoldObject() {
 
