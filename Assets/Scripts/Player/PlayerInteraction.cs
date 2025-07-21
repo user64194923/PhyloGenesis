@@ -187,7 +187,7 @@ public class PlayerInteraction : MonoBehaviour {
             heldObjectRb.constraints = RigidbodyConstraints.FreezeRotation;
             heldObjectRb.transform.parent = ObjectHoldingPoint;
 
-            Physics.IgnoreCollision(heldObject.GetComponent<Collider>(), Player.GetComponent<Collider>(), true);
+            // Physics.IgnoreCollision(heldObject.GetComponent<Collider>(), Player.GetComponent<Collider>(), true);
 
             MoveHeldObject();
 
@@ -209,7 +209,7 @@ public class PlayerInteraction : MonoBehaviour {
     private void DropObject() {
 
         if (heldObjectRb != null) {
-            Physics.IgnoreCollision( heldObject.GetComponent<Collider>(), Player.GetComponent<Collider>(), false);
+            // Physics.IgnoreCollision( heldObject.GetComponent<Collider>(), Player.GetComponent<Collider>(), false);
 
             heldObjectRb.drag = 1;
             heldObjectRb.constraints = RigidbodyConstraints.None;
