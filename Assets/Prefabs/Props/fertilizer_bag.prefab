@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8727166649615959033}
   - component: {fileID: 8318849538502107290}
   - component: {fileID: 1379628414100538413}
+  - component: {fileID: 538345886504267054}
   m_Layer: 3
   m_Name: fertilizer_bag
   m_TagString: Untagged
@@ -28,13 +29,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 291096344062986562}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071067}
+  m_LocalRotation: {x: -0.7069834, y: 0, z: 0, w: 0.7072302}
   m_LocalPosition: {x: 1.5, y: 1.5, z: 4.5}
   m_LocalScale: {x: 0.3, y: 0.29999995, z: 0.29999995}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -89.98, y: 0, z: 0}
 --- !u!33 &6583345489312989159
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -133,3 +134,16 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.6504734, y: 3.9999995, z: 0.58184546}
   m_Center: {x: 0, y: 0, z: -0.010142519}
+--- !u!114 &538345886504267054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 291096344062986562}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4d54679048982f45add214080df0f10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PropName: fertilizer

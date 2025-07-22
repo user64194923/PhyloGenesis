@@ -48,6 +48,8 @@ public class PlayerInteraction : MonoBehaviour {
     private GameObject equippedObject;
     private Rigidbody equippedObjectRb;
 
+    private string equippedObjectName;
+
     public bool IsHoldingObject;
     public bool IsEquippedObject;
 
@@ -83,12 +85,17 @@ public class PlayerInteraction : MonoBehaviour {
 
         if (Physics.Raycast(ray, out hit, interactionRange, interactableLayer)) {
 
-            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
             // if (heldObject == null) PlayerUI.ActivateCrosshairRing(true);
+
+            IInteractable interactable = hit.collider.GetComponentInParent<IInteractable>();
+            if (interactable == null) {
+                interactable = hit.collider.GetComponentInChildren<IInteractable>();
+            }
 
             if (Input.GetKeyDown(InteractKey)) {
                 if (interactable != null) {
                     interactable.Interact();
+                    if (!Input.GetKey(KeyCode.Mouse1)) PickUpObject(hit);
                 } else {
                     if (!Input.GetKey(KeyCode.Mouse1)) PickUpObject(hit);
                 }
@@ -111,6 +118,7 @@ public class PlayerInteraction : MonoBehaviour {
     #region Methods
 
     private void EquipObject(RaycastHit hit) {
+
         equippedObjectRb = hit.transform.gameObject.GetComponent<Rigidbody>();
 
         if (equippedObjectRb != null && !equippedObjectRb.isKinematic) {
@@ -127,14 +135,19 @@ public class PlayerInteraction : MonoBehaviour {
 
             Physics.IgnoreCollision(equippedObject.GetComponentInChildren<Collider>(), Player.GetComponentInChildren<Collider>(), true);
 
+            Prop propObj = equippedObject.GetComponent<Prop>();
+            if (propObj != null) {
+                equippedObjectName = propObj.GetPropName();
+                // Debug.Log(equippedObjectName);
+            }
+            
+
         } else {
             Debug.Log("Cant equip this object");
         }
     }
 
     private void UnEquipObject() {
-
-        Debug.Log("UnEquip");
 
         if (equippedObject == null) return;
 
@@ -245,6 +258,7 @@ public class PlayerInteraction : MonoBehaviour {
     private IEnumerator ClearEquippedObject() {
 
         yield return new WaitForSeconds(0.1f);
+        equippedObjectName = "";
         equippedObject = null;
         equippedObjectRb = null;
         IsEquippedObject = false;
@@ -282,8 +296,17 @@ public class PlayerInteraction : MonoBehaviour {
 
 
     public bool GetIsHoldingObject() {
+
         if (heldObject == null) return false;
-        else return true;
+        return true;
     }
+
+    public string GetEquippedObjectName() {
+
+        if (!IsEquippedObject) return("");
+        return(equippedObjectName);
+    }
+    
+
     #endregion
 }
