@@ -8,7 +8,15 @@ public class Pot : MonoBehaviour, IInteractable {
     private string FertilizerObjectName;
 
     [SerializeField]
+    private string SoilObjectName;
+
+    [SerializeField]
     private GameObject FertilizerObject;
+
+
+
+    [SerializeField]
+    private GameObject SoilObject;
 
 
     public void Interact() {
@@ -29,6 +37,10 @@ public class Pot : MonoBehaviour, IInteractable {
 
         if (equippedObjectName == FertilizerObjectName) {
             FertilizerObject.SetActive(true);
+        }
+
+        if (equippedObjectName == SoilObjectName) {
+            SoilObject.SetActive(true);
         }
 
     }

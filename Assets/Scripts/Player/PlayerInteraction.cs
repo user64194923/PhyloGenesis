@@ -134,6 +134,8 @@ public class PlayerInteraction : MonoBehaviour {
             equippedObjectRb.isKinematic = true;
 
             Physics.IgnoreCollision(equippedObject.GetComponentInChildren<Collider>(), Player.GetComponentInChildren<Collider>(), true);
+            equippedObject.GetComponentInChildren<Collider>().enabled = false;
+
 
             Prop propObj = equippedObject.GetComponent<Prop>();
             if (propObj != null) {
@@ -159,6 +161,9 @@ public class PlayerInteraction : MonoBehaviour {
         equippedObjectRb.isKinematic = false;
 
         equippedObjectRb.AddForce(ObjectEquipPoint.forward * (ObjectThrowForce * 0.1f), ForceMode.Impulse);
+
+        Physics.IgnoreCollision(equippedObject.GetComponentInChildren<Collider>(), Player.GetComponentInChildren<Collider>(), false);
+        equippedObject.GetComponentInChildren<Collider>().enabled = true;
 
         StartCoroutine(ClearEquippedObject());
 
