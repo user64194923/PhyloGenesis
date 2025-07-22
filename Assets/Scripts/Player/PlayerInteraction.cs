@@ -125,7 +125,7 @@ public class PlayerInteraction : MonoBehaviour {
             equippedObjectRb.transform.parent = ObjectEquipPoint;
             equippedObjectRb.isKinematic = true;
 
-            Physics.IgnoreCollision(equippedObject.GetComponent<Collider>(), Player.GetComponent<Collider>(), true);
+            Physics.IgnoreCollision(equippedObject.GetComponentInChildren<Collider>(), Player.GetComponentInChildren<Collider>(), true);
 
         } else {
             Debug.Log("Cant equip this object");
@@ -187,7 +187,7 @@ public class PlayerInteraction : MonoBehaviour {
             heldObjectRb.constraints = RigidbodyConstraints.FreezeRotation;
             heldObjectRb.transform.parent = ObjectHoldingPoint;
 
-            // Physics.IgnoreCollision(heldObject.GetComponent<Collider>(), Player.GetComponent<Collider>(), true);
+            Physics.IgnoreCollision(heldObject.GetComponentInChildren<Collider>(), Player.GetComponentInChildren<Collider>(), true);
 
             MoveHeldObject();
 
@@ -209,7 +209,7 @@ public class PlayerInteraction : MonoBehaviour {
     private void DropObject() {
 
         if (heldObjectRb != null) {
-            // Physics.IgnoreCollision( heldObject.GetComponent<Collider>(), Player.GetComponent<Collider>(), false);
+            Physics.IgnoreCollision( heldObject.GetComponentInChildren<Collider>(), Player.GetComponentInChildren<Collider>(), false);
 
             heldObjectRb.drag = 1;
             heldObjectRb.constraints = RigidbodyConstraints.None;
@@ -225,7 +225,7 @@ public class PlayerInteraction : MonoBehaviour {
     private void ThrowObject() {
 
         if (heldObjectRb != null) {
-            Physics.IgnoreCollision( heldObject.GetComponent<Collider>(), Player.GetComponent<Collider>(), false);
+            Physics.IgnoreCollision( heldObject.GetComponentInChildren<Collider>(), Player.GetComponentInChildren<Collider>(), false);
             heldObject.transform.parent = null;
 
             heldObjectRb.drag = 0;
