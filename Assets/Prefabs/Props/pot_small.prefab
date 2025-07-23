@@ -508,6 +508,9 @@ GameObject:
   - component: {fileID: 3946872672262177455}
   - component: {fileID: 4620139203253625657}
   - component: {fileID: 600265000070553732}
+  - component: {fileID: 4563257048312914799}
+  - component: {fileID: 2174342197228304825}
+  - component: {fileID: 6851669449870126802}
   m_Layer: 3
   m_Name: pot_small
   m_TagString: Untagged
@@ -626,6 +629,9 @@ MonoBehaviour:
   SoilObjectName: soil_bag
   FertilizerObject: {fileID: 8236646323874578976}
   SoilObject: {fileID: 96064352404193096}
+  IsFertilized: 0
+  IsSoiled: 0
+  TreeSequence: 
 --- !u!114 &600265000070553732
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -639,6 +645,68 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PropName: pot_small
+--- !u!114 &4563257048312914799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7613740533856982513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb608659245afa141bd1202b56d1a308, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  preset: 3
+  axiom: X
+  rules:
+  - character: 88
+    result: X[\\X]F
+  iterations: 3
+  generatedSequence: 
+--- !u!114 &2174342197228304825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7613740533856982513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54f7d488f6403e3419ecb58844d53bde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseLength: 2
+  lengthVariance: 0.5
+  baseAngle: 25
+  angleVariance: 10
+  branchPrefab: {fileID: 7236589209013319201, guid: 21a6542dde7915a4d823588fc8542897, type: 3}
+  leafPrefab: {fileID: 5934805580067461287, guid: b4e07e7621bfe284cb20149975897a58, type: 3}
+  barkMaterials:
+  - {fileID: 2100000, guid: fd864ffed5f75554ea298aed344a243e, type: 2}
+  leafMaterials:
+  - {fileID: 2100000, guid: 2da2ed31e2561374abfab2c748f6b4b4, type: 2}
+  branchProbability: 0.9
+  branchWidthRange: {x: 0.05, y: 0.15}
+  barkColorVariance: 0.1
+  leafSizeMin: 0.2
+  leafSizeMax: 0.5
+  leafColorVariance: 0.15
+  totalGrowthTime: 15
+  parallelBranches: 2
+  branchOverlapDelay: 0.2
+--- !u!114 &6851669449870126802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7613740533856982513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c8bda0406f6d5d4ab075ca845ceed6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7851828650716650257
 GameObject:
   m_ObjectHideFlags: 0

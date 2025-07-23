@@ -1,13 +1,24 @@
 using UnityEngine;
 
-public class TreeController : MonoBehaviour
-{
-    public LSystemGenerator generator;
-    public TreeDrawer drawer;
+[RequireComponent(typeof(LSystemGenerator))]
+[RequireComponent(typeof(TreeDrawer))]
+public class TreeController : MonoBehaviour {
 
-    void Start()
-    {
+    private LSystemGenerator generator;
+    private TreeDrawer drawer;
+
+    private void Start() {
+
+        generator = GetComponent<LSystemGenerator>();
+        drawer = GetComponent<TreeDrawer>();
+
+    }
+
+    public string GrowTree() {
+
         string sequence = generator.Generate();
         drawer.DrawTree(sequence);
+
+        return sequence;
     }
 }

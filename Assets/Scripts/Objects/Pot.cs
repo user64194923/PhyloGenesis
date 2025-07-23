@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+[RequireComponent(typeof(TreeController))]
 public class Pot : MonoBehaviour, IInteractable {
 
     [SerializeField]
@@ -13,15 +15,33 @@ public class Pot : MonoBehaviour, IInteractable {
     [SerializeField]
     private GameObject FertilizerObject;
 
-
-
     [SerializeField]
     private GameObject SoilObject;
 
+    [SerializeField]
+    private bool IsFertilized;
+
+    [SerializeField]
+    private bool IsSoiled;
+
+    private TreeController TreeController;
+
+    [SerializeField]
+    private string TreeSequence;
+
+    private void Start() {
+
+        TreeSequence = "";
+
+        IsFertilized = false;
+        IsSoiled = false;
+
+        TreeController = GetComponent<TreeController>();
+    }
+
+
 
     public void Interact() {
-
-        Debug.Log("interact");
 
         PlayerInteraction PI = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerInteraction>();
 
@@ -37,10 +57,16 @@ public class Pot : MonoBehaviour, IInteractable {
 
         if (equippedObjectName == FertilizerObjectName) {
             FertilizerObject.SetActive(true);
+            IsFertilized = true;
         }
 
         if (equippedObjectName == SoilObjectName) {
             SoilObject.SetActive(true);
+            IsSoiled = true;
+        }
+
+        if (IsFertilized && IsSoiled) {
+            TreeSequence = TreeController.GrowTree();
         }
 
     }
