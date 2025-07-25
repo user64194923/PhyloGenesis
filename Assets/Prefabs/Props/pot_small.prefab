@@ -657,11 +657,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb608659245afa141bd1202b56d1a308, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  preset: 3
+  preset: 0
   axiom: X
   rules:
   - character: 88
-    result: X[\\X]F
+    result: F[&\\X][/X][X][X]
+  - character: 70
+    result: F
   iterations: 3
   generatedSequence: 
 --- !u!114 &2174342197228304825
@@ -693,7 +695,7 @@ MonoBehaviour:
   leafSizeMax: 0.5
   leafColorVariance: 0.15
   totalGrowthTime: 15
-  parallelBranches: 2
+  parallelBranches: 3
   branchOverlapDelay: 0.2
 --- !u!114 &6851669449870126802
 MonoBehaviour:
