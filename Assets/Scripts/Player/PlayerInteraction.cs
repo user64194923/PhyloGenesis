@@ -7,7 +7,7 @@ public class PlayerInteraction : MonoBehaviour {
 
     [Header("Input")]
     [SerializeField]
-    private KeyCode InteractKey;
+    private KeyCode PickUpKey;
     [SerializeField]
     private KeyCode EquipKey;
     [SerializeField]
@@ -68,10 +68,12 @@ public class PlayerInteraction : MonoBehaviour {
 
             MoveHeldObject();
 
-            if (Input.GetKeyUp(InteractKey)) DropObject();
+            if (Input.GetKeyUp(PickUpKey)) DropObject();
             if (Input.GetKeyDown(FireKey)) ThrowObject();
 
         }
+
+
 
         if (equippedObject != null) {
 
@@ -92,19 +94,12 @@ public class PlayerInteraction : MonoBehaviour {
                 interactable = hit.collider.GetComponentInChildren<IInteractable>();
             }
 
-            if (Input.GetKeyDown(InteractKey)) {
-                if (interactable != null) {
-                    interactable.Interact();
-                    if (!Input.GetKey(KeyCode.Mouse1)) PickUpObject(hit);
-                } else {
-                    if (!Input.GetKey(KeyCode.Mouse1)) PickUpObject(hit);
-                }
+            if (interactable != null && Input.GetKeyDown(FireKey)) {
+                interactable.Interact();
             }
 
-            if (Input.GetKeyDown(EquipKey)) {
-                if (!IsEquippedObject) EquipObject(hit);
-                
-            }
+            if (Input.GetKeyDown(EquipKey)) EquipObject(hit);
+            if (Input.GetKeyDown(PickUpKey)) PickUpObject(hit);
 
             
         } else {
