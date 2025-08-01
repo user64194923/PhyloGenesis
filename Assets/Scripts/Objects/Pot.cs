@@ -24,6 +24,9 @@ public class Pot : MonoBehaviour, IInteractable {
     [SerializeField]
     private bool IsSoiled;
 
+    [SerializeField]
+    private bool IsGrowed;
+
     private TreeController TreeController;
 
     [SerializeField]
@@ -31,10 +34,13 @@ public class Pot : MonoBehaviour, IInteractable {
 
     private void Start() {
 
+
+
         TreeSequence = "";
 
         IsFertilized = false;
         IsSoiled = false;
+        IsGrowed = false;
 
         TreeController = GetComponent<TreeController>();
     }
@@ -42,6 +48,8 @@ public class Pot : MonoBehaviour, IInteractable {
 
 
     public void Interact() {
+
+        if (IsGrowed) return;
 
         PlayerInteraction PI = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerInteraction>();
 
@@ -67,6 +75,7 @@ public class Pot : MonoBehaviour, IInteractable {
 
         if (IsFertilized && IsSoiled) {
             TreeSequence = TreeController.GrowTree();
+            IsGrowed = true;
         }
 
     }

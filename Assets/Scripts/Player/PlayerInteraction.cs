@@ -98,8 +98,8 @@ public class PlayerInteraction : MonoBehaviour {
                 interactable.Interact();
             }
 
-            if (Input.GetKeyDown(EquipKey)) EquipObject(hit);
-            if (Input.GetKeyDown(PickUpKey)) PickUpObject(hit);
+            if (equippedObject == null && Input.GetKeyDown(EquipKey)) EquipObject(hit);
+            if (heldObject == null && Input.GetKeyDown(PickUpKey)) PickUpObject(hit);
 
             
         } else {

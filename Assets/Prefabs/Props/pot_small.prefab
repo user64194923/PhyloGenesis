@@ -631,6 +631,7 @@ MonoBehaviour:
   SoilObject: {fileID: 96064352404193096}
   IsFertilized: 0
   IsSoiled: 0
+  IsGrowed: 0
   TreeSequence: 
 --- !u!114 &600265000070553732
 MonoBehaviour:
@@ -661,10 +662,12 @@ MonoBehaviour:
   axiom: X
   rules:
   - character: 88
-    result: F[&\\X][/X][X][X]
+    result: F[&\\X][/X][X][X]L
   - character: 70
-    result: F
-  iterations: 3
+    result: FF
+  - character: 76
+    result: L
+  iterations: 4
   generatedSequence: 
 --- !u!114 &2174342197228304825
 MonoBehaviour:
