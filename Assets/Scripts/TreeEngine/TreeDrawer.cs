@@ -53,6 +53,14 @@ public class TreeDrawer : MonoBehaviour
 
     public void DrawTree(string sequence)
     {
+
+        if (GetComponent<LSystemGenerator>().preset == TreePreset.BonsaiLike)
+        {
+            ApplyBonsaiStyle();
+            // transform.rotation = Quaternion.Euler(0, Random.Range(-10f, 10f), Random.Range(-20f, 20f));
+        }
+
+
         branchesToGrow.Clear();
         Vector3 position = transform.position;
         Quaternion rotation = Quaternion.identity;
@@ -78,10 +86,11 @@ public class TreeDrawer : MonoBehaviour
 
                 Vector3 mid = (start + end) / 2f;
                 Vector3 curveOffset = rotation * new Vector3(
-                    Random.Range(-0.6f, 0.6f),
-                    Random.Range(0.1f, 0.6f),
-                    Random.Range(-0.6f, 0.6f)
+                    Random.Range(-0.4f, 0.4f),
+                    Random.Range(-0.2f, 0.4f),
+                    Random.Range(-0.4f, 0.4f)
                 );
+
                 Vector3 control = mid + curveOffset;
 
                 GameObject branch = new GameObject("Branch");
@@ -339,4 +348,24 @@ public class TreeDrawer : MonoBehaviour
         if (renderer != null)
             renderer.material = instanceMat;
     }
+
+    public void ApplyBonsaiStyle()
+    {
+        baseLength = 0.6f;
+        lengthVariance = 0.2f;
+        baseAngle = 35f;
+        angleVariance = 20f;
+        branchProbability = 0.95f;
+        branchWidthRange = new Vector2(0.02f, 0.07f);
+        barkColorVariance = 0.2f;
+
+        leafSizeMin = 0.1f;
+        leafSizeMax = 0.25f;
+        leafColorVariance = 0.2f;
+
+        totalGrowthTime = 8f;
+        parallelBranches = 3;
+        branchOverlapDelay = 0.1f;
+    }
+
 }

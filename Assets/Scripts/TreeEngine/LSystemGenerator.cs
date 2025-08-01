@@ -14,8 +14,10 @@ public enum TreePreset
     Custom,
     MapleLike,
     PineLike,
-    FernLike
+    FernLike,
+    BonsaiLike
 }
+
 
 public class LSystemGenerator : MonoBehaviour
 {
@@ -89,6 +91,13 @@ public class LSystemGenerator : MonoBehaviour
                 iterations = 4;
                 presetRules.Add(new Rule { character = 'X', result = "F[+X]F[-X]FX" });
                 presetRules.Add(new Rule { character = 'F', result = "FF" });
+                break;
+
+            case TreePreset.BonsaiLike:
+                axiom = "X";
+                iterations = 4;
+                presetRules.Add(new Rule { character = 'X', result = "F[\\+X][/-X]FX" });
+                presetRules.Add(new Rule { character = 'F', result = "F" });
                 break;
         }
 

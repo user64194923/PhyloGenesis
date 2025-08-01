@@ -1327,10 +1327,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4563257048312914799, guid: be917487f26d37a43a5c5f92a49f6087, type: 3}
-      propertyPath: rules.Array.data[1].result
-      value: F
-      objectReference: {fileID: 0}
     - target: {fileID: 7613740533856982513, guid: be917487f26d37a43a5c5f92a49f6087, type: 3}
       propertyPath: m_Name
       value: pot_small
