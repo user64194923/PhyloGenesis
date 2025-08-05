@@ -37,6 +37,9 @@ public class TreeDrawer : MonoBehaviour
     private Vector3 treeBasePosition;
 
 
+    private InstancedLeafManager leafManager;
+
+
     private class BranchData
     {
         public Vector3 start;
@@ -59,6 +62,8 @@ public class TreeDrawer : MonoBehaviour
             ApplyBonsaiStyle();
             // transform.rotation = Quaternion.Euler(0, Random.Range(-10f, 10f), Random.Range(-20f, 20f));
         }
+
+        leafManager = GetComponent<InstancedLeafManager>();
 
 
         branchesToGrow.Clear();
@@ -223,12 +228,14 @@ public class TreeDrawer : MonoBehaviour
                                             Random.Range(-60f, 60f)
                                         );
 
-            GameObject leaf = Instantiate(leafPrefab, position + offset, randomRotation, transform);
-            AssignRandomMaterial(leaf, leafMaterials, leafColorVariance);
+            // GameObject leaf = Instantiate(leafPrefab, position + offset, randomRotation, transform);
+            // AssignRandomMaterial(leaf, leafMaterials, leafColorVariance);
 
-            leaf.transform.localScale = Vector3.zero;
+            // leaf.transform.localScale = Vector3.zero;
 
-            StartCoroutine(AnimateSingleLeafGrowth(leaf));
+            // StartCoroutine(AnimateSingleLeafGrowth(leaf));
+
+            leafManager.AddLeavesToBranch(position, position, 10);
         }
 
         yield return null;
