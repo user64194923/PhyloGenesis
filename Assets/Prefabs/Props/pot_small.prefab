@@ -684,7 +684,7 @@ MonoBehaviour:
   baseAngle: 25
   angleVariance: 10
   branchPrefab: {fileID: 7236589209013319201, guid: 21a6542dde7915a4d823588fc8542897, type: 3}
-  leafPrefab: {fileID: 5934805580067461287, guid: b4e07e7621bfe284cb20149975897a58, type: 3}
+  leafPrefab: {fileID: 7538632036192714284, guid: 69ab7a13e8e3bf24b9a57de02514c1da, type: 3}
   barkMaterials:
   - {fileID: 2100000, guid: fd864ffed5f75554ea298aed344a243e, type: 2}
   leafMaterials:
@@ -692,8 +692,8 @@ MonoBehaviour:
   branchProbability: 0.9
   branchWidthRange: {x: 0.05, y: 0.15}
   barkColorVariance: 0.1
-  leafSizeMin: 0.2
-  leafSizeMax: 0.5
+  leafSizeMin: 0.9
+  leafSizeMax: 1.5
   leafColorVariance: 0.15
   totalGrowthTime: 15
   parallelBranches: 3
