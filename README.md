@@ -5,7 +5,8 @@
 
 ---
 
-![TreeGrowth]([https://x.com/i/status/1944680999574520234])
+![Tree Growing Preview 1](media/tree_procedural_generation_petrol_2.gif)
+![Tree Growing Preview 2](media/tree_procedural_generation_petrol.gif)
 
 ## What is PhyloGenesis?
 
