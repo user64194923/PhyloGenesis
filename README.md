@@ -8,7 +8,6 @@
 <p align="center">
   <img src="media/tree_procedural_generation_petrol.gif" width="400" alt="Tree Growing Preview 1">
   <img src="media/tree_procedural_generation_petrol_2.gif" width="400" alt="Tree Growing Preview 2">
-  <img src="media/tree_procedural_generation_petrol_3.gif" width="400" alt="Tree Growing Preview 3">
 </p>
 
 ## What is PhyloGenesis?
