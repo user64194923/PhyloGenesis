@@ -15,17 +15,19 @@ public class TreeDrawer : MonoBehaviour
 
     [Header("Prefabs & Materials")]
     public GameObject branchPrefab;
-    public GameObject leafPrefab;
+    public GameObject leafPrefab; // Keep for backward compatibility, but won't be used
     public Material[] barkMaterials;
     public Material[] leafMaterials;
+
+    [Header("Simple Leaf Settings")]
+    public Material leafMaterial; // Single material for leaf planes
+    public float leafPlaneSize = 0.3f;
+    [Range(0.3f, 1.0f)] public float leafHeightThreshold = 0.4f;
 
     [Header("Randomization")]
     [Range(0f, 1f)] public float branchProbability = 1f;
     public Vector2 branchWidthRange = new Vector2(0.05f, 0.15f);
     public float barkColorVariance = 0.1f;
-    public float leafSizeMin = 0.2f;
-    public float leafSizeMax = 0.5f;
-    public float leafColorVariance = 0.15f;
 
     [Header("Growth Timing")]
     public float totalGrowthTime = 15f;
@@ -33,12 +35,16 @@ public class TreeDrawer : MonoBehaviour
     public float branchOverlapDelay = 0.2f;
 
     private Stack<TurtleState> stateStack = new Stack<TurtleState>();
-    private List<(Vector3 position, Vector3 direction)> leafSpawnPoints = new List<(Vector3, Vector3)>();
+    private List<Vector3> branchEndpoints = new List<Vector3>();
     private Vector3 treeBasePosition;
 
-
-    private InstancedLeafManager leafManager;
-
+    private struct BranchInfo
+    {
+        public Vector3 start;
+        public Vector3 end;
+        public Vector3 direction;
+        public float thickness;
+    }
 
     private class BranchData
     {
@@ -46,6 +52,7 @@ public class TreeDrawer : MonoBehaviour
         public Vector3 control;
         public Vector3 end;
         public GameObject prefab;
+        public BranchInfo branchInfo;
     }
 
     private struct TurtleState
@@ -56,24 +63,31 @@ public class TreeDrawer : MonoBehaviour
 
     public void DrawTree(string sequence)
     {
-
         if (GetComponent<LSystemGenerator>().preset == TreePreset.BonsaiLike)
         {
             ApplyBonsaiStyle();
-            // transform.rotation = Quaternion.Euler(0, Random.Range(-10f, 10f), Random.Range(-20f, 20f));
         }
 
-        leafManager = GetComponent<InstancedLeafManager>();
-
-
+        // Clear existing data
         branchesToGrow.Clear();
+        branchEndpoints.Clear();
+        
+        // Remove any existing leaf planes
+        Transform[] existingLeaves = GetComponentsInChildren<Transform>();
+        foreach (Transform child in existingLeaves)
+        {
+            if (child.name.StartsWith("LeafPlane"))
+            {
+                DestroyImmediate(child.gameObject);
+            }
+        }
+        
         Vector3 position = transform.position;
         Quaternion rotation = Quaternion.identity;
         maxTreeHeight = position.y;
-
         treeBasePosition = transform.position;
 
-
+        // Parse L-System sequence and create branch data
         foreach (char c in sequence)
         {
             if (c == 'F')
@@ -89,25 +103,35 @@ public class TreeDrawer : MonoBehaviour
 
                 if (end.y > maxTreeHeight) maxTreeHeight = end.y;
 
+                // Calculate branch curve
                 Vector3 mid = (start + end) / 2f;
                 Vector3 curveOffset = rotation * new Vector3(
                     Random.Range(-0.4f, 0.4f),
                     Random.Range(-0.2f, 0.4f),
                     Random.Range(-0.4f, 0.4f)
                 );
-
                 Vector3 control = mid + curveOffset;
 
                 GameObject branch = new GameObject("Branch");
                 branch.transform.parent = transform;
                 AssignRandomMaterial(branch, barkMaterials, barkColorVariance);
 
+                // Create branch info
+                BranchInfo branchInfo = new BranchInfo
+                {
+                    start = start,
+                    end = end,
+                    direction = direction,
+                    thickness = CalculateBranchThickness(end)
+                };
+
                 branchesToGrow.Enqueue(new BranchData
                 {
                     start = start,
                     control = control,
                     end = end,
-                    prefab = branch
+                    prefab = branch,
+                    branchInfo = branchInfo
                 });
             }
             else if (c == '+') rotation *= Quaternion.Euler(0, 0, RandomizedAngle());
@@ -123,17 +147,41 @@ public class TreeDrawer : MonoBehaviour
             {
                 if (stateStack.Count > 0)
                 {
+                    // This is a branch endpoint - record it if it's high enough
+                    if (position.y >= maxTreeHeight * leafHeightThreshold)
+                    {
+                        branchEndpoints.Add(position);
+                    }
+                    
                     TurtleState state = stateStack.Pop();
                     position = state.position;
                     rotation = state.rotation;
                 }
             }
         }
+        
+        // Also add the final position as an endpoint if it qualifies
+        if (position.y >= maxTreeHeight * leafHeightThreshold)
+        {
+            branchEndpoints.Add(position);
+        }
 
-        StartCoroutine(GrowTreeWithOverlap());
+        Debug.Log($"Found {branchEndpoints.Count} branch endpoints for leaves");
+
+        StartCoroutine(GrowTreeWithLeaves());
     }
 
-    private IEnumerator GrowTreeWithOverlap()
+    private float CalculateBranchThickness(Vector3 end)
+    {
+        float verticalRatio = Mathf.InverseLerp(0f, maxTreeHeight, end.y);
+        float horizontalDistance = Vector3.Distance(new Vector3(end.x, 0, end.z), new Vector3(treeBasePosition.x, 0, treeBasePosition.z));
+        float maxHorizontalDistance = 4f;
+        float horizontalRatio = Mathf.Clamp01(horizontalDistance / maxHorizontalDistance);
+        float taperFactor = Mathf.Clamp01((verticalRatio + horizontalRatio) / 2f);
+        return Mathf.Lerp(branchWidthRange.y, branchWidthRange.x, taperFactor);
+    }
+
+    private IEnumerator GrowTreeWithLeaves()
     {
         float timePerBranch = totalGrowthTime / Mathf.Max(branchesToGrow.Count, 1);
         List<Coroutine> activeCoroutines = new List<Coroutine>();
@@ -144,44 +192,116 @@ public class TreeDrawer : MonoBehaviour
             {
                 BranchData branch = branchesToGrow.Dequeue();
                 float randomDuration = timePerBranch * Random.Range(0.7f, 1.3f);
-                Coroutine grow = StartCoroutine(AnimateBranchGrowth(branch.prefab, branch.start, branch.control, branch.end, randomDuration, maxTreeHeight));
+                Coroutine grow = StartCoroutine(AnimateBranchGrowth(
+                    branch.prefab, 
+                    branch.start, 
+                    branch.control, 
+                    branch.end, 
+                    randomDuration, 
+                    branch.branchInfo
+                ));
                 activeCoroutines.Add(grow);
                 yield return new WaitForSeconds(branchOverlapDelay * Random.Range(0.8f, 1.2f));
             }
         }
 
+        // Wait for all branches to finish growing
         foreach (var co in activeCoroutines)
-            yield return co;
+        {
+            if (co != null) yield return co;
+        }
 
-        StartCoroutine(GrowAllLeaves());
-
+        // Now create simple leaf planes at each endpoint
+        CreateLeafPlanes();
     }
 
-    private IEnumerator GrowAllLeaves()
+    private void CreateLeafPlanes()
     {
-        foreach (var (position, direction) in leafSpawnPoints)
+        Debug.Log($"Creating leaf planes at {branchEndpoints.Count} endpoints");
+        
+        foreach (Vector3 endpoint in branchEndpoints)
         {
-            StartCoroutine(AnimateLeafGrowth(position, direction));
-            yield return new WaitForSeconds(0.02f); // Slight delay between each leaf cluster
+            // Create exactly 3 planes per endpoint
+            for (int i = 0; i < 3; i++)
+            {
+                GameObject leafPlane = CreateLeafPlane(endpoint, i);
+                leafPlane.transform.parent = transform;
+            }
         }
     }
 
-
-    private IEnumerator AnimateBranchGrowth(GameObject branch, Vector3 start, Vector3 control, Vector3 end, float duration, float treeHeight)
+    private GameObject CreateLeafPlane(Vector3 position, int planeIndex)
     {
-        float verticalRatio = Mathf.InverseLerp(0f, treeHeight, end.y);
-        float horizontalDistance = Vector3.Distance(new Vector3(end.x, 0, end.z), new Vector3(treeBasePosition.x, 0, treeBasePosition.z));
-        float maxHorizontalDistance = 4f; // You can adjust this based on tree size
+        GameObject leafPlane = new GameObject($"LeafPlane_{planeIndex}");
+        
+        // Add MeshFilter and MeshRenderer
+        MeshFilter mf = leafPlane.AddComponent<MeshFilter>();
+        MeshRenderer mr = leafPlane.AddComponent<MeshRenderer>();
+        
+        // Create a simple quad mesh
+        mf.mesh = CreateQuadMesh();
+        
+        // Assign leaf material
+        if (leafMaterial != null)
+        {
+            mr.material = leafMaterial;
+        }
+        
+        // Position the plane at the branch endpoint
+        leafPlane.transform.position = position;
+        
+        // Rotate each plane differently so they form a cluster
+        float rotationY = planeIndex * 120f; // 0°, 120°, 240°
+        float randomTilt = Random.Range(-15f, 15f);
+        leafPlane.transform.rotation = Quaternion.Euler(randomTilt, rotationY, 0);
+        
+        // Scale the plane
+        leafPlane.transform.localScale = Vector3.one * leafPlaneSize * Random.Range(0.8f, 1.2f);
+        
+        return leafPlane;
+    }
 
-        float horizontalRatio = Mathf.Clamp01(horizontalDistance / maxHorizontalDistance);
+    private Mesh CreateQuadMesh()
+    {
+        Mesh mesh = new Mesh();
+        mesh.name = "LeafQuad";
 
-        // Combine vertical and horizontal ratios to get taper factor
-        float taperFactor = Mathf.Clamp01((verticalRatio + horizontalRatio) / 2f);
+        // Vertices for a quad (centered at origin)
+        Vector3[] vertices = new Vector3[]
+        {
+            new Vector3(-0.5f, -0.5f, 0),
+            new Vector3(0.5f, -0.5f, 0),
+            new Vector3(0.5f, 0.5f, 0),
+            new Vector3(-0.5f, 0.5f, 0)
+        };
 
-        // Invert taperFactor so that closer = thicker, farther = thinner
-        float width = Mathf.Lerp(branchWidthRange.y, branchWidthRange.x, taperFactor);
+        // UVs
+        Vector2[] uvs = new Vector2[]
+        {
+            new Vector2(0, 0),
+            new Vector2(1, 0),
+            new Vector2(1, 1),
+            new Vector2(0, 1)
+        };
 
+        // Triangles (both sides)
+        int[] triangles = new int[]
+        {
+            0, 1, 2,  0, 2, 3,  // Front face
+            2, 1, 0,  3, 2, 0   // Back face
+        };
 
+        mesh.vertices = vertices;
+        mesh.uv = uvs;
+        mesh.triangles = triangles;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        return mesh;
+    }
+
+    private IEnumerator AnimateBranchGrowth(GameObject branch, Vector3 start, Vector3 control, Vector3 end, float duration, BranchInfo branchInfo)
+    {
         MeshFilter mf = branch.GetComponent<MeshFilter>();
         if (!mf) mf = branch.AddComponent<MeshFilter>();
 
@@ -190,72 +310,10 @@ public class TreeDrawer : MonoBehaviour
 
         AssignRandomMaterial(branch, barkMaterials, barkColorVariance);
 
-        Mesh branchMesh = GenerateBezierBranchMesh(start, control, end, width, treeHeight); // Pass treeHeight
+        Mesh branchMesh = GenerateBezierBranchMesh(start, control, end, branchInfo.thickness, maxTreeHeight);
         mf.mesh = branchMesh;
 
         yield return new WaitForSeconds(Random.Range(0.1f, 0.3f));
-
-        // if (end.y >= treeHeight * 0.4f)
-        // {
-        //     StartCoroutine(AnimateLeafGrowth(end, (end - start).normalized));
-        // }
-
-        if (end.y >= treeHeight * 0.4f)
-        {
-            leafSpawnPoints.Add((end, (end - start).normalized));
-        }
-
-    }
-
-    private IEnumerator AnimateLeafGrowth(Vector3 position, Vector3 branchDirection)
-    {
-        if (!leafPrefab) yield break;
-
-        int leafCount = Random.Range(3, 6);
-
-        for (int i = 0; i < leafCount; i++)
-        {
-            Vector3 offset = new Vector3(
-                Random.Range(-0.1f, 0.1f),
-                Random.Range(-0.1f, 0.1f),
-                Random.Range(-0.1f, 0.1f)
-            );
-
-            Quaternion randomRotation = Quaternion.LookRotation(branchDirection) *
-                                        Quaternion.Euler(
-                                            Random.Range(-60f, 60f),
-                                            Random.Range(-60f, 60f),
-                                            Random.Range(-60f, 60f)
-                                        );
-
-            // GameObject leaf = Instantiate(leafPrefab, position + offset, randomRotation, transform);
-            // AssignRandomMaterial(leaf, leafMaterials, leafColorVariance);
-
-            // leaf.transform.localScale = Vector3.zero;
-
-            // StartCoroutine(AnimateSingleLeafGrowth(leaf));
-
-            leafManager.AddLeavesToBranch(position, position, 10);
-        }
-
-        yield return null;
-    }
-
-    private IEnumerator AnimateSingleLeafGrowth(GameObject leaf)
-    {
-        float duration = 0.5f;
-        float elapsed = 0f;
-        Vector3 targetScale = Vector3.one * Random.Range(leafSizeMin, leafSizeMax);
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
-            leaf.transform.localScale = Vector3.Lerp(Vector3.zero, targetScale, t);
-            yield return null;
-        }
-
-        leaf.transform.localScale = targetScale;
     }
 
     private float RandomizedAngle()
@@ -287,7 +345,7 @@ public class TreeDrawer : MonoBehaviour
             Quaternion rot = Quaternion.LookRotation(forward);
 
             float heightRatio = Mathf.InverseLerp(0f, maxTreeHeight, center.y);
-            float taper = Mathf.Lerp(1f, 0.2f, heightRatio); // 1 at base, 0.2 at top
+            float taper = Mathf.Lerp(1f, 0.2f, heightRatio);
 
             for (int j = 0; j < radialSegments; j++)
             {
@@ -325,8 +383,6 @@ public class TreeDrawer : MonoBehaviour
         return mesh;
     }
 
-
-
     private void AssignRandomMaterial(GameObject obj, Material[] materials, float tintVariance)
     {
         if (materials.Length == 0) return;
@@ -340,14 +396,11 @@ public class TreeDrawer : MonoBehaviour
             float h, s, v;
             Color.RGBToHSV(baseColor, out h, out s, out v);
 
-            // Shift hue slightly toward orange-brown, darken value
             h = Mathf.Clamp01(h + Random.Range(-0.02f, 0.02f));
             s = Mathf.Clamp01(s + Random.Range(-0.05f, 0.1f));
-            v = Mathf.Clamp01(v - Random.Range(0.1f, 0.25f)); // darken more
+            v = Mathf.Clamp01(v - Random.Range(0.1f, 0.25f));
 
             Color randomTint = Color.HSVToRGB(h, s, v);
-
-
             instanceMat.color = randomTint;
         }
 
@@ -365,14 +418,30 @@ public class TreeDrawer : MonoBehaviour
         branchProbability = 0.95f;
         branchWidthRange = new Vector2(0.02f, 0.07f);
         barkColorVariance = 0.2f;
-
-        leafSizeMin = 0.1f;
-        leafSizeMax = 0.25f;
-        leafColorVariance = 0.2f;
+        
+        leafPlaneSize = 0.2f; // Smaller leaves for bonsai
+        leafHeightThreshold = 0.25f;
 
         totalGrowthTime = 8f;
         parallelBranches = 3;
         branchOverlapDelay = 0.1f;
     }
 
+    // Helper method to regenerate just the leaves (useful for testing)
+    [ContextMenu("Regenerate Leaves Only")]
+    public void RegenerateLeaves()
+    {
+        // Remove existing leaf planes
+        Transform[] existingLeaves = GetComponentsInChildren<Transform>();
+        foreach (Transform child in existingLeaves)
+        {
+            if (child.name.StartsWith("LeafPlane"))
+            {
+                DestroyImmediate(child.gameObject);
+            }
+        }
+        
+        // Create new ones
+        CreateLeafPlanes();
+    }
 }

@@ -690,6 +690,10 @@ MonoBehaviour:
   - {fileID: 2100000, guid: fd864ffed5f75554ea298aed344a243e, type: 2}
   leafMaterials:
   - {fileID: 2100000, guid: 2da2ed31e2561374abfab2c748f6b4b4, type: 2}
+  leavesPerEndpoint: 6
+  leafSpreadRadius: 0
+  leafGrowthDelay: 0.005
+  leafHeightThreshold: 0.955
   branchProbability: 0.9
   branchWidthRange: {x: 0.05, y: 0.15}
   barkColorVariance: 0.1
@@ -724,11 +728,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   leafMaterial: {fileID: 2100000, guid: 1673c54b3af254e4e82966736c4d606e, type: 2}
-  leafMesh: {fileID: -462981019419857548, guid: c6f5b330330ccea4ba8951339842d3da, type: 3}
-  maxLeavesPerBatch: 1023
+  leafMesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+  maxLeavesPerBatch: 1
   leafSize: 0.5
   atlasVariations: 4
-  leafSizeVariation: {x: 0.8, y: 1.2}
+  leafSizeVariation: {x: 1, y: 1}
 --- !u!1 &7851828650716650257
 GameObject:
   m_ObjectHideFlags: 0

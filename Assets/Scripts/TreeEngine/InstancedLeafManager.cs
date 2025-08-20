@@ -90,24 +90,103 @@ public class InstancedLeafManager : MonoBehaviour
         RebuildBatches();
     }
 
-    public void AddLeavesToBranch(Vector3 branchStart, Vector3 branchEnd, int leafCount)
+    public void AddLeavesAtPoint(Vector3 position, Vector3 direction, int leafCount, float spread = 0.3f)
+    {
+        Debug.Log($"Adding {leafCount} leaves at position {position} with spread {spread}");
+        
+        // Create a very tight cluster directly at the branch endpoint
+        for (int i = 0; i < leafCount; i++)
+        {
+            // Create leaves in a small cluster around the exact endpoint
+            Vector3 randomOffset = Random.insideUnitSphere * spread * 0.5f; // Much smaller spread
+            Vector3 leafPos = position + randomOffset;
+            
+            // Make sure leaves don't go below the endpoint
+            if (leafPos.y < position.y - spread * 0.2f)
+                leafPos.y = position.y - spread * 0.2f;
+            
+            // Normal should point outward from the endpoint
+            Vector3 normal = randomOffset.normalized;
+            if (normal.magnitude < 0.1f) 
+                normal = Random.insideUnitSphere.normalized;
+            
+            Debug.Log($"  Leaf {i} at: {leafPos} (offset: {randomOffset})");
+
+            leafPos = position;
+            normal = new Vector3(0f,0f,0f);
+
+            AddLeaf(leafPos, normal);
+        }
+        
+        Debug.Log($"Total leaves after adding: {allLeaves.Count}");
+    }
+
+    public void AddLeavesToBranch(Vector3 branchStart, Vector3 branchEnd, int leafCount, float branchThickness = 0.05f)
     {
         Vector3 branchDir = (branchEnd - branchStart).normalized;
         float branchLength = Vector3.Distance(branchStart, branchEnd);
 
+        // Create perpendicular vectors to the branch direction for radial positioning
+        Vector3 perpendicular1 = Vector3.Cross(branchDir, Vector3.up).normalized;
+        if (perpendicular1.magnitude < 0.1f) // If branch is vertical, use forward
+            perpendicular1 = Vector3.Cross(branchDir, Vector3.forward).normalized;
+        Vector3 perpendicular2 = Vector3.Cross(branchDir, perpendicular1).normalized;
+
         for (int i = 0; i < leafCount; i++)
         {
-            float t = Random.Range(0.2f, 1.0f); // Don't place leaves at very start of branch
+            float t = Random.Range(0.3f, 1.0f); // Don't place leaves at very start of branch
             Vector3 branchPos = Vector3.Lerp(branchStart, branchEnd, t);
             
-            // Offset slightly from branch
-            Vector3 offset = Random.insideUnitSphere * 0.1f;
-            Vector3 leafPos = branchPos + offset;
+            // Position leaves around the branch circumference, not randomly in space
+            float angle = Random.Range(0f, 2f * Mathf.PI);
+            float radiusMultiplier = Random.Range(0.8f, 2.5f); // Stay close to branch surface
+            float radius = branchThickness * radiusMultiplier;
             
-            // Random normal biased away from branch
-            Vector3 normal = (Random.insideUnitSphere + branchDir.normalized).normalized;
+            Vector3 radialOffset = (perpendicular1 * Mathf.Cos(angle) + perpendicular2 * Mathf.Sin(angle)) * radius;
+            Vector3 leafPos = branchPos + radialOffset;
+            
+            // Slight random offset along branch direction
+            leafPos += branchDir * Random.Range(-0.05f, 0.05f);
+            
+            // Normal should point outward from branch
+            Vector3 normal = radialOffset.normalized;
+            // Add some randomness but keep it generally pointing outward
+            normal = Vector3.Slerp(normal, Random.insideUnitSphere.normalized, 0.3f).normalized;
             
             AddLeaf(leafPos, normal);
+        }
+    }
+
+    public void AddLeafClusters(Vector3 branchStart, Vector3 branchEnd, int clusterCount, int leavesPerCluster, float branchThickness = 0.05f)
+    {
+        Vector3 branchDir = (branchEnd - branchStart).normalized;
+        
+        for (int cluster = 0; cluster < clusterCount; cluster++)
+        {
+            // Position clusters along the branch
+            float t = Random.Range(0.4f, 1.0f);
+            Vector3 clusterCenter = Vector3.Lerp(branchStart, branchEnd, t);
+            
+            // Offset cluster slightly from branch center
+            Vector3 perpendicular = Vector3.Cross(branchDir, Vector3.up).normalized;
+            if (perpendicular.magnitude < 0.1f)
+                perpendicular = Vector3.Cross(branchDir, Vector3.forward).normalized;
+            
+            float angle = Random.Range(0f, 2f * Mathf.PI);
+            Vector3 clusterOffset = Quaternion.AngleAxis(angle * Mathf.Rad2Deg, branchDir) * perpendicular * branchThickness * Random.Range(0.5f, 2f);
+            clusterCenter += clusterOffset;
+            
+            // Add leaves in this cluster
+            for (int leaf = 0; leaf < leavesPerCluster; leaf++)
+            {
+                Vector3 leafOffset = Random.insideUnitSphere * 0.15f; // Small tight cluster
+                Vector3 leafPos = clusterCenter + leafOffset;
+                
+                Vector3 normal = (leafPos - (clusterCenter - clusterOffset)).normalized;
+                normal = Vector3.Slerp(normal, Random.insideUnitSphere.normalized, 0.2f).normalized;
+                
+                AddLeaf(leafPos, normal);
+            }
         }
     }
 
@@ -115,6 +194,17 @@ public class InstancedLeafManager : MonoBehaviour
     {
         allLeaves.Clear();
         leafBatches.Clear();
+        Debug.Log("Cleared all leaves");
+    }
+
+    public int GetBatchCount()
+    {
+        return leafBatches.Count;
+    }
+
+    public int GetLeafCount()
+    {
+        return allLeaves.Count;
     }
 
     private void RebuildBatches()
@@ -145,6 +235,8 @@ public class InstancedLeafManager : MonoBehaviour
 
             currentBatch.count++;
         }
+        
+        Debug.Log($"Rebuilt {leafBatches.Count} batches with {allLeaves.Count} total leaves");
     }
 
     private void RenderLeaves()
@@ -251,6 +343,13 @@ public class InstancedLeafManager : MonoBehaviour
         foreach (LeafData leaf in allLeaves)
         {
             Gizmos.DrawWireCube(leaf.position, Vector3.one * leaf.scale * 0.1f);
+        }
+        
+        // Draw a larger gizmo at each leaf position to make them more visible
+        Gizmos.color = Color.yellow;
+        foreach (LeafData leaf in allLeaves)
+        {
+            Gizmos.DrawSphere(leaf.position, 0.05f);
         }
     }
 }
