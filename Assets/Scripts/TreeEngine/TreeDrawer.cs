@@ -21,7 +21,7 @@ public class TreeDrawer : MonoBehaviour
 
     [Header("Simple Leaf Settings")]
     public Material leafMaterial; // Single material for leaf planes
-    public float leafPlaneSize = 0.3f;
+    public float leafPlaneSize;
     [Range(0.3f, 1.0f)] public float leafHeightThreshold = 0.4f;
 
     [Header("Randomization")]
@@ -419,7 +419,7 @@ public class TreeDrawer : MonoBehaviour
         branchWidthRange = new Vector2(0.02f, 0.07f);
         barkColorVariance = 0.2f;
         
-        leafPlaneSize = 0.2f; // Smaller leaves for bonsai
+        leafPlaneSize = 0.8f;
         leafHeightThreshold = 0.25f;
 
         totalGrowthTime = 8f;
