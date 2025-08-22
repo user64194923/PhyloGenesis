@@ -419,7 +419,7 @@ public class TreeDrawer : MonoBehaviour
         branchWidthRange = new Vector2(0.02f, 0.07f);
         barkColorVariance = 0.2f;
         
-        leafPlaneSize = 0.8f;
+        leafPlaneSize = 0.6f;
         leafHeightThreshold = 0.25f;
 
         totalGrowthTime = 8f;
