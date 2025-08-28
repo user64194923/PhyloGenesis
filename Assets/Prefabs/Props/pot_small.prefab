@@ -690,7 +690,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: fd864ffed5f75554ea298aed344a243e, type: 2}
   leafHeightThreshold: 0.955
   leafGrowTime: 1
-  leafScaleRange: {x: 0.2, y: 0.5}
+  leafScaleRange: {x: 0.05, y: 0.2}
   branchProbability: 0.9
   branchWidthRange: {x: 0.05, y: 0.15}
   barkColorVariance: 0.1
