@@ -685,14 +685,12 @@ MonoBehaviour:
   baseAngle: 25
   angleVariance: 10
   branchPrefab: {fileID: 7236589209013319201, guid: 21a6542dde7915a4d823588fc8542897, type: 3}
-  leafPrefab: {fileID: 7538632036192714284, guid: 69ab7a13e8e3bf24b9a57de02514c1da, type: 3}
+  leafPrefab: {fileID: 919132149155446097, guid: 18dbbab3e1a59cf48b64e7c9f47c41f7, type: 3}
   barkMaterials:
   - {fileID: 2100000, guid: fd864ffed5f75554ea298aed344a243e, type: 2}
-  leafMaterials:
-  - {fileID: 2100000, guid: 1673c54b3af254e4e82966736c4d606e, type: 2}
-  leafMaterial: {fileID: 2100000, guid: 1673c54b3af254e4e82966736c4d606e, type: 2}
-  leafPlaneSize: 1
   leafHeightThreshold: 0.955
+  leafGrowTime: 1
+  leafScaleRange: {x: 0.2, y: 0.5}
   branchProbability: 0.9
   branchWidthRange: {x: 0.05, y: 0.15}
   barkColorVariance: 0.1
