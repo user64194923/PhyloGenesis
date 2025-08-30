@@ -15,16 +15,22 @@ public class TreeDrawer : MonoBehaviour
 
     [Header("Prefabs & Materials")]
     public GameObject branchPrefab;
-    public GameObject leafPrefab; // Used for spawning actual prefab leaves
+    public GameObject leafPrefab; 
     public Material[] barkMaterials;
 
     [Header("Leaf Settings")]
     public float leafHeightThreshold = 0.4f;
-    public float leafGrowTime = 1f;         // How long it takes for a leaf to scale up
-    public Vector2 leafScaleRange = new Vector2(0.8f, 1.2f); // Random leaf size
+    public float leafGrowTime = 1f;
+    public Vector2 leafScaleRange = new Vector2(0.8f, 1.2f);
 
     [Header("Randomization")]
     [Range(0f, 1f)] public float branchProbability = 1f;
+
+
+    [Header("Branch Thickness Control")]
+    public float baseTrunkThickness = 0.3f;
+    public float thinnessMultiplier = 1.0f;
+
     public Vector2 branchWidthRange = new Vector2(0.05f, 0.15f);
     public float barkColorVariance = 0.1f;
 
@@ -36,6 +42,7 @@ public class TreeDrawer : MonoBehaviour
     private Stack<TurtleState> stateStack = new Stack<TurtleState>();
     private List<Vector3> branchEndpoints = new List<Vector3>();
     private Vector3 treeBasePosition;
+    private bool isFirstBranch = true;
 
     private struct BranchInfo
     {
@@ -70,15 +77,27 @@ public class TreeDrawer : MonoBehaviour
         // Clear existing data
         branchesToGrow.Clear();
         branchEndpoints.Clear();
+        isFirstBranch = true;
 
-        // Remove existing leaves
-        Transform[] children = GetComponentsInChildren<Transform>();
-        foreach (Transform child in children)
+        // Safe cleanup of existing leaves
+        List<Transform> toDestroy = new List<Transform>();
+        foreach (Transform child in GetComponentsInChildren<Transform>())
         {
-            if (child != transform && child.name.StartsWith("Leaf"))
+            if (child != null && child != transform && child.name.StartsWith("Leaf"))
             {
-                DestroyImmediate(child.gameObject);
+                toDestroy.Add(child);
             }
+        }
+        foreach (var leaf in toDestroy)
+        {
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+                DestroyImmediate(leaf.gameObject);
+            else
+                Destroy(leaf.gameObject);
+#else
+            Destroy(leaf.gameObject);
+#endif
         }
 
         Vector3 position = transform.position;
@@ -115,12 +134,15 @@ public class TreeDrawer : MonoBehaviour
                 branch.transform.parent = transform;
                 AssignRandomMaterial(branch, barkMaterials, barkColorVariance);
 
+                float thickness = isFirstBranch ? baseTrunkThickness : CalculateBranchThickness(end);
+                isFirstBranch = false;
+
                 BranchInfo branchInfo = new BranchInfo
                 {
                     start = start,
                     end = end,
                     direction = direction,
-                    thickness = CalculateBranchThickness(end)
+                    thickness = thickness
                 };
 
                 branchesToGrow.Enqueue(new BranchData
@@ -161,14 +183,25 @@ public class TreeDrawer : MonoBehaviour
         StartCoroutine(GrowTreeWithLeaves());
     }
 
-    private float CalculateBranchThickness(Vector3 end)
+    private float CalculateBranchThickness(Vector3 point)
     {
-        float verticalRatio = Mathf.InverseLerp(0f, maxTreeHeight, end.y);
-        float horizontalDistance = Vector3.Distance(new Vector3(end.x, 0, end.z), new Vector3(treeBasePosition.x, 0, treeBasePosition.z));
+        // vertical distance ratio (0 = base, 1 = top)
+        float verticalRatio = Mathf.InverseLerp(0f, maxTreeHeight, point.y);
+
+        // horizontal spread ratio (0 = center trunk, 1 = far outward)
+        float horizontalDistance = Vector3.Distance(
+            new Vector3(point.x, 0, point.z),
+            new Vector3(treeBasePosition.x, 0, treeBasePosition.z)
+        );
         float maxHorizontalDistance = 4f;
         float horizontalRatio = Mathf.Clamp01(horizontalDistance / maxHorizontalDistance);
+
+        // combine vertical + horizontal to create taper
         float taperFactor = Mathf.Clamp01((verticalRatio + horizontalRatio) / 2f);
-        return Mathf.Lerp(branchWidthRange.y, branchWidthRange.x, taperFactor);
+        taperFactor = Mathf.Pow(taperFactor, thinnessMultiplier); // exaggeration control
+
+        // smoothly interpolate between thick trunk and thin branches
+        return Mathf.Lerp(baseTrunkThickness, branchWidthRange.x, taperFactor);
     }
 
     private IEnumerator GrowTreeWithLeaves()
@@ -198,7 +231,6 @@ public class TreeDrawer : MonoBehaviour
         foreach (var co in activeCoroutines)
             if (co != null) yield return co;
 
-        // Create prefab leaves
         CreateLeafPrefabs();
     }
 
@@ -214,20 +246,15 @@ public class TreeDrawer : MonoBehaviour
         {
             GameObject leaf = Instantiate(leafPrefab, endpoint, Quaternion.identity, transform);
 
-            // Random rotation for natural look
             leaf.transform.rotation = Quaternion.Euler(
                 Random.Range(-20f, 20f),
                 Random.Range(0f, 360f),
                 Random.Range(-20f, 20f)
             );
 
-            // Random final scale
             float finalScale = Random.Range(leafScaleRange.x, leafScaleRange.y);
-
-            // Start tiny
             leaf.transform.localScale = Vector3.zero;
 
-            // Animate growth
             StartCoroutine(GrowLeaf(leaf.transform, finalScale));
         }
     }
@@ -243,6 +270,15 @@ public class TreeDrawer : MonoBehaviour
             elapsed += Time.deltaTime;
             yield return null;
         }
+
+
+        // Random rotation
+        leaf.transform.rotation = Quaternion.Euler(
+            Random.Range(-30f, 30f),
+            Random.Range(0f, 360f),
+            Random.Range(-30f, 30f)
+        );
+        
         leaf.localScale = Vector3.one * targetScale;
     }
 

@@ -688,12 +688,15 @@ MonoBehaviour:
   leafPrefab: {fileID: 2071841709599223646, guid: 929eea695cdb4f2488c8d5880247b4d3, type: 3}
   barkMaterials:
   - {fileID: 2100000, guid: fd864ffed5f75554ea298aed344a243e, type: 2}
-  leafHeightThreshold: 0.955
+  leafHeightThreshold: 0.74
   leafGrowTime: 1
   leafScaleRange: {x: 0.1, y: 0.5}
-  branchProbability: 0.9
-  branchWidthRange: {x: 0.05, y: 0.4}
+  branchProbability: 1
+  branchWidthRange: {x: 0.2, y: 0.2}
   barkColorVariance: 0.1
+  verticalTaperStrength: 0.868
+  horizontalTaperStrength: 0.785
+  maxHorizontalDistance: 5
   totalGrowthTime: 15
   parallelBranches: 3
   branchOverlapDelay: 0.2
