@@ -692,11 +692,10 @@ MonoBehaviour:
   leafGrowTime: 1
   leafScaleRange: {x: 0.1, y: 0.5}
   branchProbability: 1
+  baseTrunkThickness: 0.3
+  thinnessMultiplier: 1.2
   branchWidthRange: {x: 0.2, y: 0.2}
   barkColorVariance: 0.1
-  verticalTaperStrength: 0.868
-  horizontalTaperStrength: 0.785
-  maxHorizontalDistance: 5
   totalGrowthTime: 15
   parallelBranches: 3
   branchOverlapDelay: 0.2

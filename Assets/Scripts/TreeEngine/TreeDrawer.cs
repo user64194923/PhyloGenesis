@@ -278,7 +278,6 @@ public class TreeDrawer : MonoBehaviour
             Random.Range(0f, 360f),
             Random.Range(-30f, 30f)
         );
-        
         leaf.localScale = Vector3.one * targetScale;
     }
 
